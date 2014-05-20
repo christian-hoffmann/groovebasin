@@ -13,7 +13,7 @@ var hardwarePlaybackOn = false;
 
 var selection = {
   ids: {
-    playlist: {},
+    queue: {},
     artist: {},
     album: {},
     track: {},
@@ -28,7 +28,7 @@ var selection = {
     return this.type === 'artist' || this.type === 'album' || this.type === 'track';
   },
   isPlaylist: function(){
-    return this.type === 'playlist';
+    return this.type === 'queue';
   },
   isStoredPlaylist: function(){
     return this.type === 'stored_playlist' || this.type === 'stored_playlist_item';
@@ -37,7 +37,7 @@ var selection = {
     this.ids.artist = {};
     this.ids.album = {};
     this.ids.track = {};
-    this.ids.playlist = {};
+    this.ids.queue = {};
     this.ids.stored_playlist = {};
     this.ids.stored_playlist_item = {};
   },
@@ -72,7 +72,7 @@ var selection = {
       return false;
     } else if (this.isPlaylist()) {
       result = 2;
-      for (k in this.ids.playlist) {
+      for (k in this.ids.queue) {
         if (!--result) return true;
       }
       return false;
@@ -288,7 +288,7 @@ var selection = {
     }
     function playlistToTrackKeys(){
       var keys = [];
-      for (var key in selection.ids.playlist) {
+      for (var key in selection.ids.queue) {
         keys.push(player.playlist.itemTable[key].track.key);
       }
       if (random) shuffle(keys);
@@ -397,7 +397,6 @@ var $playlistItems = $('#playlist-items');
 var $dynamicMode = $('#dynamic-mode');
 var $pl_btn_repeat = $('#pl-btn-repeat');
 var $tabs = $('#tabs');
-var $upload_tab = $tabs.find('.upload-tab');
 var $library = $('#library');
 var $lib_filter = $('#lib-filter');
 var $trackSlider = $('#track-slider');
@@ -466,7 +465,7 @@ function loadLocalState() {
 function scrollLibraryToSelection(){
   var helpers = getSelectionHelpers();
   if (helpers == null) return;
-  delete helpers.playlist;
+  delete helpers.queue;
   scrollThingToSelection($library, helpers);
 }
 
@@ -637,8 +636,8 @@ function getSelectionHelpers(){
   if (player.searchResults == null) return null;
   if (player.searchResults.artistTable == null) return null;
   return {
-    playlist: {
-      ids: selection.ids.playlist,
+    queue: {
+      ids: selection.ids.queue,
       table: player.playlist.itemTable,
       $getDiv: function(id){
         return $("#playlist-track-" + id);
@@ -689,8 +688,8 @@ function refreshSelection() {
   $library         .find(".clickable").removeClass('selected').removeClass('cursor');
   $stored_playlists.find(".clickable").removeClass('selected').removeClass('cursor');
   if (selection.type == null) return;
-  for (var selection_type in helpers) {
-    var helper = helpers[selection_type];
+  for (var selectionType in helpers) {
+    var helper = helpers[selectionType];
     var id;
     // clean out stale ids
     for (id in helper.ids) {
@@ -701,14 +700,14 @@ function refreshSelection() {
     for (id in helper.ids) {
       helper.$getDiv(id).addClass('selected');
     }
-    if (selection.cursor != null && selection_type === selection.type) {
-      var validIds = getValidIds(selection_type);
+    if (selection.cursor != null && selectionType === selection.type) {
+      var validIds = getValidIds(selectionType);
       if (validIds[selection.cursor] == null) {
         // server just deleted our current cursor item.
         // select another of our ids randomly, if we have any.
         selection.cursor = Object.keys(helper.ids)[0];
         selection.rangeSelectAnchor = selection.cursor;
-        selection.rangeSelectAnchorType = selection_type;
+        selection.rangeSelectAnchorType = selectionType;
         if (selection.cursor == null) {
           // no selected items
           selection.fullClear();
@@ -721,12 +720,12 @@ function refreshSelection() {
   }
 }
 
-function getValidIds(selection_type) {
-  switch (selection_type) {
-    case 'playlist': return player.playlist.itemTable;
-    case 'artist':   return player.library.artistTable;
-    case 'album':    return player.library.albumTable;
-    case 'track':    return player.library.trackTable;
+function getValidIds(selectionType) {
+  switch (selectionType) {
+    case 'queue':  return player.playlist.itemTable;
+    case 'artist': return player.library.artistTable;
+    case 'album':  return player.library.albumTable;
+    case 'track':  return player.library.trackTable;
   }
   throw new Error("BadSelectionType");
 }
@@ -1008,14 +1007,14 @@ function handleDeletePressed(shift) {
   } else if (selection.isPlaylist()) {
     if (shift) {
       keysList = [];
-      for (var id in selection.ids.playlist) {
+      for (var id in selection.ids.queue) {
         keysList.push(player.playlist.itemTable[id].track.key);
       }
       if (!confirmDelete(keysList)) return;
       socket.send('deleteTracks', keysList);
     }
     var sortKey = player.playlist.itemTable[selection.cursor].sortKey;
-    player.removeIds(Object.keys(selection.ids.playlist));
+    player.removeIds(Object.keys(selection.ids.queue));
     var item = null;
     for (var i = 0; i < player.playlist.itemList.length; i++) {
       item = player.playlist.itemList[i];
@@ -1027,7 +1026,7 @@ function handleDeletePressed(shift) {
     }
     // if there's no items, select nothing.
     if (item != null) {
-      selection.selectOnly('playlist', item.id);
+      selection.selectOnly('queue', item.id);
     }
     refreshSelection();
   }
@@ -1074,7 +1073,7 @@ var keyboardHandlers = (function(){
     }
     if (event.altKey) {
       if (selection.isPlaylist()) {
-        player.shiftIds(selection.ids.playlist, dir);
+        player.shiftIds(selection.ids.queue, dir);
       }
     } else {
       if (selection.isPlaylist()) {
@@ -1086,7 +1085,7 @@ var keyboardHandlers = (function(){
         if (!event.ctrlKey && !event.shiftKey) {
           // single select
           selection.clear();
-          selection.ids.playlist[selection.cursor] = true;
+          selection.ids.queue[selection.cursor] = true;
           selection.rangeSelectAnchor = selection.cursor;
           selection.rangeSelectAnchorType = selection.type;
         } else if (!event.ctrlKey && event.shiftKey) {
@@ -1128,7 +1127,7 @@ var keyboardHandlers = (function(){
         }
       } else {
         if (player.playlist.itemList.length === 0) return;
-        selection.selectOnly('playlist', player.playlist.itemList[defaultIndex].id);
+        selection.selectOnly('queue', player.playlist.itemList[defaultIndex].id);
       }
       refreshSelection();
     }
@@ -1458,7 +1457,7 @@ function selectPlaylistRange() {
     max_pos = tmp;
   }
   for (var i = min_pos; i <= max_pos; i++) {
-    selection.ids.playlist[player.playlist.itemList[i].id] = true;
+    selection.ids.queue[player.playlist.itemList[i].id] = true;
   }
 }
 function selectTreeRange() {
@@ -1618,7 +1617,7 @@ function setUpPlaylistUi(){
       trackId = $(this).attr('data-id');
       skipDrag = false;
       if (!selection.isPlaylist()) {
-        selection.selectOnly('playlist', trackId);
+        selection.selectOnly('queue', trackId);
       } else if (event.ctrlKey || event.shiftKey) {
         skipDrag = true;
         if (event.shiftKey && !event.ctrlKey) {
@@ -1632,8 +1631,8 @@ function setUpPlaylistUi(){
           selection.rangeSelectAnchorType = selection.type;
           toggleSelectionUnderCursor();
         }
-      } else if (selection.ids.playlist[trackId] == null) {
-        selection.selectOnly('playlist', trackId);
+      } else if (selection.ids.queue[trackId] == null) {
+        selection.selectOnly('queue', trackId);
       }
       refreshSelection();
       if (!skipDrag) {
@@ -1646,14 +1645,14 @@ function setUpPlaylistUi(){
             };
             player.moveIds((function(){
               var results$ = [];
-              for (var id in selection.ids.playlist) {
+              for (var id in selection.ids.queue) {
                 results$.push(id);
               }
               return results$;
             })(), result.previous_key, result.next_key);
           },
           cancel: function(){
-            selection.selectOnly('playlist', trackId);
+            selection.selectOnly('queue', trackId);
             refreshSelection();
           }
         });
@@ -1663,8 +1662,8 @@ function setUpPlaylistUi(){
       event.preventDefault();
       removeContextMenu();
       trackId = $(this).attr('data-id');
-      if (!selection.isPlaylist() || selection.ids.playlist[trackId] == null) {
-        selection.selectOnly('playlist', trackId);
+      if (!selection.isPlaylist() || selection.ids.queue[trackId] == null) {
+        selection.selectOnly('queue', trackId);
         refreshSelection();
       }
       if (!selection.isMulti()) {
@@ -2016,45 +2015,45 @@ function setUpNowPlayingUi(){
   }
 }
 
+var tabs = [
+  {
+    name: 'library',
+    $pane: $('#library-pane'),
+    $tab: $('#library-tab'),
+  },
+  {
+    name: 'upload',
+    $pane: $('#upload-pane'),
+    $tab: $('#upload-tab'),
+  },
+  {
+    name: 'playlists',
+    $pane: $('#playlists-pane'),
+    $tab: $('#playlists-tab'),
+  },
+  {
+    name: 'settings',
+    $pane: $('#settings-pane'),
+    $tab: $('#settings-tab'),
+  },
+];
+
 function setUpTabsUi(){
-  var tabs, i, len$, tab;
-  $tabs.on('mouseover', 'li', function(event){
-    $(this).addClass('ui-state-hover');
-  });
-  $tabs.on('mouseout', 'li', function(event){
-    $(this).removeClass('ui-state-hover');
-  });
-  tabs = ['library', 'upload', 'settings'];
-  function tabSelector(tab_name){
-    return "li." + tab_name + "-tab";
+  tabs.forEach(setUpTabListener);
+
+  function setUpTabListener(tab) {
+    tab.$tab.on('click', function(event) {
+      unselectTabs();
+      tab.$tab.addClass('ui-state-active');
+      tab.$pane.show();
+      handleResize();
+    });
   }
-  function $pane(tab_name){
-    return $("#" + tab_name + "-pane");
-  }
-  function $tab(tab_name){
-    return $tabs.find(tabSelector(tab_name));
-  }
-  function unselectTabs(){
-    var i, ref$, len$, tab;
-    $tabs.find('li').removeClass('ui-state-active');
-    for (i = 0, len$ = (ref$ = tabs).length; i < len$; ++i) {
-      tab = ref$[i];
-      $pane(tab).hide();
-    }
-  }
-  clickTab = function(name){
-    unselectTabs();
-    $tab(name).addClass('ui-state-active');
-    $pane(name).show();
-    handleResize();
-  };
-  for (i = 0, len$ = tabs.length; i < len$; ++i) {
-    tab = tabs[i];
-    (fn$.call(this, tab));
-  }
-  function fn$(tab){
-    $tabs.on('click', tabSelector(tab), function(event){
-      clickTab(tab);
+
+  function unselectTabs() {
+    tabs.forEach(function(tab) {
+      tab.$tab.removeClass('ui-state-active');
+      tab.$pane.hide();
     });
   }
 }
