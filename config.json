@@ -21,5 +21,7 @@
     "mpdHost": "0.0.0.0",
     "mpdPort": 6600,
     "acoustidAppKey": "bgFvC4vW",
-    "encodeQueueDuration": 8
+    "encodeQueueDuration": 8,
+     "sslKey": false,
+     "sslCert": false
 }
