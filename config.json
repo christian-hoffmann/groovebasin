@@ -1,6 +1,7 @@
 {
     "host": "127.0.0.1",
     "port": 10000,
+    "uploadDirectory": "/var/uploadDir",
     "dbPath": "/var/groovebasin.db",
     "musicDirectory": "/var/music",
     "permissions": {
