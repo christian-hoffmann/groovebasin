@@ -2349,9 +2349,11 @@ function unselectTabs() {
 }
 
 function uploadFiles(files) {
+  $("#upload-widget-error").html('');
   if (files.length === 0) return;
 
   var formData = new FormData();
+  var totalSize = 0;
 
   if (localState.autoQueueUploads) {
     formData.append('autoQueue', '1');
@@ -2360,7 +2362,18 @@ function uploadFiles(files) {
   for (var i = 0; i < files.length; i += 1) {
     var file = files[i];
     formData.append("size", String(file.size));
+    totalSize += file.size;
     formData.append("file", file);
+  }
+
+  // Sandstorm cannot handle large uploads yet.
+  if (totalSize > 32 * 1024 * 1024) {
+    var errorMessage = "Error: Sandstorm currently limits uploads to 32MB.";
+    if (files.length > 1) {
+      errorMessage += "  Try uploading fewer files at a time.";
+    }
+    $("#upload-widget-error").html(errorMessage);
+    return;
   }
 
   var $progressBar = $('<div></div>');
