@@ -387,8 +387,8 @@ var localState = {
     session_key: null,
     scrobbling_on: false
   },
-  authUsername: null,
-  authPassword: null,
+  authUsername: 'sandstorm_user',
+  authPassword: 'xyzzy',
   autoQueueUploads: true,
 };
 var $document = $(document);
@@ -506,10 +506,11 @@ var activeTab = tabs.library;
 var $eventsTabSpan = tabs.events.$tab.find('span');
 
 function saveLocalState(){
-  localStorage.setItem('state', JSON.stringify(localState));
+  //localStorage.setItem('state', JSON.stringify(localState));
 }
 
 function loadLocalState() {
+  return;
   var stateString = localStorage.getItem('state');
   if (!stateString) return;
   var obj;
