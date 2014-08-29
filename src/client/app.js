@@ -2368,7 +2368,7 @@ function uploadFiles(files) {
   }
 
   // Sandstorm cannot handle large uploads yet.
-  if (totalSize > 32 * 1024 * 1024) {
+  if (false) {//  if (totalSize > 32 * 1024 * 1024) {
     var errorMessage = "Error: Sandstorm currently limits uploads to 32MB.";
     errorMessage += " (We hope to lift this restriction soon.)"
     if (files.length > 1) {
