@@ -13,7 +13,7 @@ var haveAdminUser = true;
 var eventsListScrolledToBottom = true;
 var isBrowserTabActive = true;
 
-var tryingToStream = false;
+var tryingToStream = true;
 var actuallyStreaming = false;
 var actuallyPlaying = false;
 var stillBuffering = false;
@@ -3330,7 +3330,7 @@ function getStreamStatusLabel() {
 }
 
 function getStreamButtonLabel() {
-  return getStreamerCount() + " Stream: " + getStreamStatusLabel();
+  return /*getStreamerCount() + */ " Stream: " + getStreamStatusLabel();
 }
 
 function renderStreamButton(){
