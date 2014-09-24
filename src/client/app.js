@@ -2354,7 +2354,6 @@ function uploadFiles(files) {
   if (files.length === 0) return;
 
   var formData = new FormData();
-  var totalSize = 0;
 
   if (localState.autoQueueUploads) {
     formData.append('autoQueue', '1');
@@ -2363,7 +2362,6 @@ function uploadFiles(files) {
   for (var i = 0; i < files.length; i += 1) {
     var file = files[i];
     formData.append("size", String(file.size));
-    totalSize += file.size;
     formData.append("file", file);
   }
 
