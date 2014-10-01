@@ -141,6 +141,8 @@ node_modules/cookies/lib/cookies.js
 node_modules/cookies/node_modules/keygrip/index.js
 node_modules/cookies/node_modules/keygrip/package.json
 node_modules/cookies/package.json
+node_modules/curlydiff/index.js
+node_modules/curlydiff/package.json
 node_modules/express/index.js
 node_modules/express/lib/application.js
 node_modules/express/lib/express.js
@@ -390,6 +392,10 @@ node_modules/ws/lib/WebSocketServer.js
 node_modules/ws/node_modules/options/lib/options.js
 node_modules/ws/node_modules/options/package.json
 node_modules/ws/package.json
+node_modules/yazl/index.js
+node_modules/yazl/node_modules/buffer-crc32/index.js
+node_modules/yazl/node_modules/buffer-crc32/package.json
+node_modules/yazl/package.json
 node_modules/ytdl-core/lib/crequest.js
 node_modules/ytdl-core/lib/formats.js
 node_modules/ytdl-core/lib/index.js
