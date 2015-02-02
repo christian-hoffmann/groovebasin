@@ -2979,7 +2979,6 @@ function unselectTabs() {
 }
 
 function uploadFiles(files) {
-  $("#upload-widget-error").html('');
   if (files.length === 0) return;
 
   var formData = new FormData();
