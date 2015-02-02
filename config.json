@@ -1,5 +1,5 @@
 {
-    "host": "192.168.0.50",
+    "host": "192.168.56.50",
     "port": 16242,
     "dbPath": "groovebasin.db",
     "musicDirectory": "/home/dwrensha/music",
@@ -10,5 +10,7 @@
     "acoustidAppKey": "bgFvC4vW",
     "encodeQueueDuration": 8,
     "sslKey": false,
-    "sslCert": false
+    "sslCert": false,
+    "sslCaDir": null,
+    "googleApiKey": "AIzaSyDdTDD8-gu_kp7dXtT-53xKcVbrboNAkpM"
 }
