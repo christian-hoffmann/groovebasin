@@ -68,8 +68,8 @@
         <div id="upload-widget">
           <input type="file" id="upload-input" multiple="multiple" placeholder="Drag and drop or click to browse">
         </div>
-        <h1>Import by Name</h1>
-        <textarea id="import-by-name" placeholder="Put a list of artist - title track names here, newline delimited. Enter when done. Shift+Enter for newline."></textarea>
+        <h1 style="display:none;">Import by Name</h1>
+        <textarea style="display:none;" id="import-by-name" placeholder="Put a list of artist - title track names here, newline delimited. Enter when done. Shift+Enter for newline."></textarea>
         <h1>Options</h1>
         <div>
           Automatically queue imported songs: <input class="button" type="button" id="auto-queue-uploads" value="On">
@@ -169,7 +169,7 @@
             <input class="button" type="button" id="toggle-hardware-playback" value="On">
           </div>
           <div>Encoded volume: <span id="vol-num"></span>%</div>
-          <div id="vol-warning" style="display: none">
+          <div id="vol-warning" style="display: none;">
             Greater than 100% volume compromises audio quality.
             <a target="_blank" href="https://www.youtube.com/watch?v=iuEtQqC-Sqo">Loudness Zen</a>
           </div>
@@ -184,7 +184,7 @@
           <h1>About</h1>
           <ul>
             <li><a id="keyboard-shortcuts-link" href="#">Keyboard Shortcuts</a></li>
-            <li><a id="settings-stream-url" href="#" target="_blank">Stream URL</a></li>
+            <li style="display: none;"><a id="settings-stream-url" href="#" target="_blank">Stream URL</a></li>
             <li><a href="http://github.com/andrewrk/groovebasin" target="_blank">GrooveBasin on GitHub</a></li>
           </ul>
         </div>
