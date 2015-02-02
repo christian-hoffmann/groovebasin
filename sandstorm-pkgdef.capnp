@@ -14,7 +14,7 @@ const pkgdef :Spk.PackageDefinition = (
   # your keyring. All updates must be signed with the same key.
 
   manifest = (
-    appVersion = 1,  # Increment this for every release.
+    appVersion = 3,  # Increment this for every release.
 
     actions = [
       ( title = (defaultText = "New GrooveBasin Instance"),
