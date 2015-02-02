@@ -1,8 +1,3 @@
-@import "vendor/cssreset.css"
-@import "vendor/jquery-ui-1.11.1.custom.css"
-@import "vendor/jquery-ui-1.11.1.structure.css"
-@import "vendor/jquery-ui-1.11.1.theme.css"
-
 lightGray = #292929
 
 user-select()
@@ -13,27 +8,218 @@ user-select()
   user-select arguments
 
 selected-div()
-  background #00498F url(images/ui-bg_dots-small_40_00498f_2x2.png) 50% 50% repeat
+  background #00498F url(img/ui-bg_dots-small_40_00498f_2x2.png) 50% 50% repeat
   color #fff
 
+slider-handle()
+  -webkit-appearance none
+  background-color white
+  border 1px solid #333
+  box-shadow inset 0 0 10px rgba(0, 0, 0, 0.5)
+  border-radius 3px
+
 html
-  background url(images/ui-bg_diagonals-thick_15_0b3e6f_40x40.png)
-html.groovebasin
-  background url(img/groovebasin.jpg)
-html.nggyu
-  background url(img/nggyu.jpg)
+  background url(img/ui-bg_diagonals-thick_15_0b3e6f_40x40.png)
 
 body
   font-family Arial, Helvetica, sans-serif
 
+div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td
+  margin 0
+  padding 0
+
+ol, ul
+  list-style none
+
+input, textarea, select
+  font-size inherit
+
 a:hover,a:active,a:focus
   outline 0
 
-#track-slider
-  margin 10px 10px 5px
+.button
+  background #333333 url("img/ui-bg_dots-small_20_333333_2x2.png") 50% 50% repeat
+  margin 3px 1px 1px 1px
+  padding 5px
+  border 0
+  border-radius 4px
+  color #fff
+  font-weight bold
+  font-size 13px
+  cursor pointer
 
-  background url("img/bright-10.png") left no-repeat
+  span
+    display inline-block
+
+  label
+    cursor pointer
+    vertical-align top
+
+.button:hover
+  background #00498f url("img/ui-bg_dots-small_40_00498f_2x2.png") 50% 50% repeat
+
+.button:disabled
+  opacity .35
+  background-image none
+
+.button:focus
+  outline 0
+
+.button.on
+  margin 2px 0 0px 0px
+  border 1px solid #096ac8
+  background #292929 url("img/ui-bg_flat_40_292929_40x100.png") 50% 50% repeat-x
+  font-weight bold
+  color #75abff
+
+#stream-btn
+  padding-right 11px
+
+input[type=range]
+  -webkit-appearance none
+  margin 10px 10px 5px
+  width calc(100% - 20px)
+  height 14px
+  border-radius 4px
+  border 1px solid #000
+  background #282828 url("img/bright-10.png") left no-repeat
   background-size 0% 100%
+
+input[type=range]::-moz-range-track
+  border none
+  background transparent
+
+input[type="range"]::-webkit-slider-thumb
+  slider-handle()
+  height 16px
+  width 14px
+
+input[type="range"]::-moz-range-thumb
+  slider-handle()
+  height 14px
+  width 12px
+
+input[type=range]:focus
+  outline 0
+
+.widget
+  border 1px solid #000000
+  background #111111 url("img/ui-bg_gloss-wave_20_111111_500x100.png") 50% top repeat-x
+  color #d9d9d9
+  border-radius 4px
+
+  a
+    color #96b7eb
+
+.icon
+  width 16px
+  height 16px
+  background-image url("img/ui-icons_9ccdfc_256x240.png")
+  display block
+  background-repeat no-repeat
+
+button:hover .icon
+  background-image url("img/ui-icons_ffffff_256x240.png")
+
+.icon-seek-next
+  background-position -32px -160px
+
+.icon-seek-prev
+  background-position -48px -160px
+
+.icon-play
+  background-position 0 -160px
+
+.icon-pause
+  background-position -16px -160px
+
+.icon-stop
+  background-position -96px -160px
+
+.icon-signal-diag
+  background-position -16px -176px
+
+.icon-volume-off
+  background-position -128px -160px
+
+.icon-volume-on
+  background-position -144px -160px
+
+.icon-info
+  background-position -16px -144px
+
+.icon-alert
+  background-position 0 -144px
+
+.icon-triangle-1-e
+  background-position -32px -16px
+
+.icon-triangle-1-se
+  background-position -48px -16px
+
+.icon-closethick
+  background-position -96px -128px
+
+#blackout
+  position fixed
+  left 0
+  top 0
+  width 100%
+  height 100%
+  background-color rgba(0, 0, 0, 0.5)
+  z-index 2
+
+#modal
+  z-index 3
+  position fixed
+
+#modal-header
+  border-radius 4px
+  border 1px solid #0b3e6f
+  background #0b3e6f url("img/ui-bg_diagonals-thick_15_0b3e6f_40x40.png") 50% 50% repeat
+  color #f6f6f6
+  font-weight bold
+  font-size 21px
+  padding 13px
+
+#modal-close
+  float right
+
+#modal-content
+  padding 4px 20px
+  overflow-x auto
+  overflow-y auto
+
+#modal-content div:focus
+  outline 0
+
+#context-menu
+  position fixed
+  z-index 1
+  font-weight normal
+  width 274px
+
+  li
+    a
+      font-size 16px
+      text-decoration none
+      display block
+      color #d9d9d9
+      padding 3px 12px
+
+#context-menu li.disabled a
+  opacity 0.35
+
+#context-menu li a:hover
+  font-weight bold
+  color #ffffff
+  background #00498f url("img/ui-bg_dots-small_40_00498f_2x2.png") 50% 50% repeat
+
+#client-vol-slider
+  margin 3px
+
+#vol-slider
+  margin 3px 0 0 0
 
 #nowplaying
   margin 6px auto
@@ -42,28 +228,23 @@ a:hover,a:active,a:focus
   .playback-btns
     float left
 
-    li
-      cursor pointer
-      float left
-      list-style none outside none
-      margin 2px
-      padding 4px
-
   h1
+    font-size 16px
     letter-spacing 0.1em
     margin-top 8px
     font-weight bold
 
-  .time
-    margin 4px
-    font-weight bold
-    font-family monospace
+#nowplaying-time-elapsed
+  float left
+  margin 4px
+  font-weight bold
+  font-family monospace
 
-  .left
-    float right
-
-  .elapsed
-    float left
+#nowplaying-time-left
+  float right
+  margin 4px
+  font-weight bold
+  font-family monospace
 
 #client-vol, #vol
   margin 8px
@@ -91,11 +272,6 @@ a:hover,a:active,a:focus
 #vol-warning a
   color #57BF3B
 
-#more-playback-btns
-  float left
-  font-size .6em
-  margin 2px 0 0 8px
-
 #left-window
   width 400px
   position absolute
@@ -108,17 +284,27 @@ a:hover,a:active,a:focus
   user-select none
 
   ul
-    margin-bottom -1px
-
     li
-      display inline
-
-      span
-        font-size .625em
-        padding 2px 4px
-        font-weight normal
-
+      display inline-block
+      background #333333 url("img/ui-bg_dots-small_20_333333_2x2.png") 50% 50% repeat
+      color #fff
+      margin 0
+      padding 6px
       cursor pointer
+      font-size 13px
+      border-top-left-radius 4px
+      border-top-right-radius 4px
+
+      &.active, &.active:hover
+        border 1px solid #096ac8
+        border-bottom 0
+        color #75abff
+        background #292929 url("img/ui-bg_flat_40_292929_40x100.png") 50% 50% repeat-x
+
+      &:hover
+        border 1px solid #222222
+        border-bottom 0
+        background #00498f url("img/ui-bg_dots-small_40_00498f_2x2.png") 50% 50% repeat
 
 #library, #playlists
   overflow-y auto
@@ -126,10 +312,14 @@ a:hover,a:active,a:focus
   user-select none
   cursor default
 
-  div.ui-icon
+  div.icon
     float left
 
   p
+    border 1px solid #052f57
+    background #0b58a2 url("img/ui-bg_dots-medium_30_0b58a2_4x4.png") 50% 50% repeat
+    color #ffffff
+    border-radius 4px
     text-align center
     margin 20px auto 0
     padding 4px
@@ -137,6 +327,7 @@ a:hover,a:active,a:focus
     span
       float left
       margin-right .3em
+      background-image url("img/ui-icons_ffffff_256x240.png")
     strong
       font-weight bold
 
@@ -263,24 +454,18 @@ a:hover,a:active,a:focus
 #upload-widget
   padding 10px
 
-#upload-by-url
+#upload-by-url, #import-by-name
   width 370px
-
-.ui-menu
-  width 250px
-  font-size 1em
-  a
-    text-decoration none
-    display block
 
 #shortcuts
   h1
+    font-size 21px
     margin-bottom 10px
     margin-top 10px
     font-weight bold
 
   dl
-    font-size .8em
+    font-size 17px
     margin-bottom 4px
 
     dt
@@ -289,6 +474,7 @@ a:hover,a:active,a:focus
       padding 3px
       background-color #272727
       font-weight bold
+      font-size 14px
       text-shadow 1px 1px 0 #000000
       border-radius 4px
 
@@ -300,13 +486,21 @@ a:hover,a:active,a:focus
     dd
       display inline
 
+#edit-tags
+  font-size 21px
+
 #main-err-msg
+  border 1px solid #cd0a0a
+  background #a32d00 url("img/ui-bg_dots-small_30_a32d00_2x2.png") 50% 50% repeat
+  color #ffffff
+  border-radius 4px
   margin 200px auto
-  width 300px
+  width 142px
   padding 4px
   span
     float left
     margin-right .3em
+    background-image url("img/ui-icons_ffffff_256x240.png")
   strong
     font-weight bold
 
@@ -390,6 +584,10 @@ a:hover,a:active,a:focus
     word-wrap break-word
   .event
     padding-top 2px
+    &.chat-me
+      color #A6A6A6
+      font-size 0.95em
+      font-style italic
   .chat
     background-color lightGray
 
@@ -398,3 +596,31 @@ a:hover,a:active,a:focus
 
 #chat-box-input
   width 100%
+
+#edit-tags
+  div
+    margin-bottom 6px
+
+  .field
+    width 177px
+    display block
+    float left
+    text-align right
+    padding-right 6px
+
+  input[type='text']
+    width 400px
+
+#add-to-playlist-list li, #add-to-playlist-new
+  font-size 16px
+  text-decoration none
+  display block
+  color #d9d9d9
+  padding 3px 12px
+  cursor pointer
+  user-select none
+
+#add-to-playlist-list li:hover, #add-to-playlist-new:hover
+  font-weight bold
+  color #ffffff
+  background #00498f url("img/ui-bg_dots-small_40_00498f_2x2.png") 50% 50% repeat

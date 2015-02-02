@@ -4,6 +4,7 @@ var uuid = require('./uuid');
 var MusicLibraryIndex = require('music-library-index');
 var keese = require('keese');
 var curlydiff = require('curlydiff');
+var shuffle = require('mess');
 
 module.exports = PlayerClient;
 
@@ -53,6 +54,7 @@ function PlayerClient(socket) {
   self.socket.on('time', function(o) {
     self.serverTimeOffset = new Date(o) - new Date();
     self.updateTrackStartDate();
+    self.sortEventsFromServer(); // because they rely on serverTimeOffset
     self.emit('statusupdate');
   });
   self.socket.on('volume', function(volume) {
@@ -152,9 +154,6 @@ PlayerClient.prototype.resubscribe = function(){
     delta: true,
     version: this.libraryFromServerVersion,
   });
-  this.sendCommand('subscribe', {name: 'volume'});
-  this.sendCommand('subscribe', {name: 'repeat'});
-  this.sendCommand('subscribe', {name: 'currentTrack'});
   this.sendCommand('subscribe', {
     name: 'queue',
     delta: true,
@@ -165,6 +164,9 @@ PlayerClient.prototype.resubscribe = function(){
     delta: true,
     version: this.scanningFromServerVersion,
   });
+  this.sendCommand('subscribe', {name: 'volume'});
+  this.sendCommand('subscribe', {name: 'repeat'});
+  this.sendCommand('subscribe', {name: 'currentTrack'});
   this.sendCommand('subscribe', {
     name: 'playlists',
     delta: true,
@@ -196,12 +198,13 @@ PlayerClient.prototype.sortEventsFromServer = function() {
     var seen = !!this.seenEvents[id];
     var ev = {
       id: id,
-      date: new Date(serverEvent.date),
+      date: new Date(new Date(serverEvent.date) - this.serverTimeOffset),
       type: serverEvent.type,
       sortKey: serverEvent.sortKey,
       text: serverEvent.text,
       pos: serverEvent.pos ? serverEvent.pos : 0,
       seen: seen,
+      displayClass: serverEvent.displayClass,
     };
     if (!seen && serverEvent.type === 'chat') {
       this.unseenChatCount += 1;
@@ -211,6 +214,9 @@ PlayerClient.prototype.sortEventsFromServer = function() {
     }
     if (serverEvent.userId) {
       ev.user = this.usersTable[serverEvent.userId];
+    }
+    if (serverEvent.playlistId) {
+      ev.playlist = this.playlistTable[serverEvent.playlistId];
     }
     this.eventsList.push(ev);
   }
@@ -275,29 +281,30 @@ PlayerClient.prototype.updateCurrentItem = function() {
     this.queue.itemTable[this.currentItemId] : null;
 };
 
-PlayerClient.prototype.clearStoredPlaylists = function() {
-  this.stored_playlist_table = {};
-  this.stored_playlist_item_table = {};
-  this.stored_playlists = [];
+PlayerClient.prototype.clearPlaylists = function() {
+  this.playlistTable = {};
+  this.playlistItemTable = {};
+  this.playlistList = [];
 };
 
 PlayerClient.prototype.sortAndIndexPlaylists = function() {
-  this.stored_playlists.sort(compareNameAndId);
-  this.stored_playlists.forEach(function(playlist, index) {
+  this.playlistList.sort(compareNameAndId);
+  this.playlistList.forEach(function(playlist, index) {
     playlist.index = index;
   });
 };
 
 PlayerClient.prototype.updatePlaylistsIndex = function() {
-  this.clearStoredPlaylists();
+  this.clearPlaylists();
   if (!this.playlistsFromServer) return;
   for (var id in this.playlistsFromServer) {
     var playlistFromServer = this.playlistsFromServer[id];
     var playlist = {
       itemList: [],
       itemTable: {},
-      id: playlistFromServer.id,
+      id: id,
       name: playlistFromServer.name,
+      mtime: playlistFromServer.mtime,
       index: 0, // we'll set this correctly later
     };
     for (var itemId in playlistFromServer.items) {
@@ -311,11 +318,11 @@ PlayerClient.prototype.updatePlaylistsIndex = function() {
         playlist: playlist,
       };
       playlist.itemTable[itemId] = item;
-      this.stored_playlist_item_table[itemId] = item;
+      this.playlistItemTable[itemId] = item;
     }
     this.refreshPlaylistList(playlist);
-    this.stored_playlists.push(playlist);
-    this.stored_playlist_table[playlist.id] = playlist;
+    this.playlistList.push(playlist);
+    this.playlistTable[playlist.id] = playlist;
   }
   this.sortAndIndexPlaylists();
 };
@@ -340,14 +347,12 @@ PlayerClient.prototype.updateQueueIndex = function() {
 
 PlayerClient.prototype.isScanning = function(track) {
   var scanInfo = this.scanningFromServer && this.scanningFromServer[track.key];
-  return scanInfo && (!scanInfo.fingerprintDone || !scanInfo.loudnessDone);
+  return !!scanInfo;
 };
 
 PlayerClient.prototype.search = function(query) {
   query = query.trim();
 
-  var words = query.split(/\s+/);
-  query = words.join(" ");
   if (query === this.lastQuery) return;
 
   this.lastQuery = query;
@@ -376,8 +381,8 @@ PlayerClient.prototype.getDefaultQueuePosition = function() {
   };
 };
 
-PlayerClient.prototype.queueTracks = function(keys, previousKey, nextKey) {
-  if (!keys.length) return;
+PlayerClient.prototype.queueOnQueue = function(keys, previousKey, nextKey) {
+  if (keys.length === 0) return;
 
   if (previousKey == null && nextKey == null) {
     var defaultPos = this.getDefaultQueuePosition();
@@ -385,27 +390,62 @@ PlayerClient.prototype.queueTracks = function(keys, previousKey, nextKey) {
     nextKey = defaultPos.nextKey;
   }
 
-  var items = {};
+  var items = this.queueTracks(this.queue, keys, previousKey, nextKey);
+  this.sendCommand('queue', items);
+  this.emit('queueUpdate');
+};
+
+PlayerClient.prototype.queueOnPlaylist = function(playlistId, keys, previousKey, nextKey) {
+  if (keys.length === 0) return;
+
+  var playlist = this.playlistTable[playlistId];
+  if (previousKey == null && nextKey == null && playlist.itemList.length > 0) {
+    previousKey = playlist.itemList[playlist.itemList.length - 1].sortKey;
+  }
+  var items = this.queueTracks(playlist, keys, previousKey, nextKey);
+
+  this.sendCommand('playlistAddItems', {
+    id: playlistId,
+    items: items,
+  });
+
+  this.emit('playlistsUpdate');
+};
+
+PlayerClient.prototype.renamePlaylist = function(playlist, newName) {
+  playlist.name = newName;
+
+  this.sendCommand('playlistRename', {
+    id: playlist.id,
+    name: playlist.name,
+  });
+
+  this.emit('playlistUpdate');
+};
+
+PlayerClient.prototype.queueTracks = function(playlist, keys, previousKey, nextKey) {
+  var items = {}; // we'll send this to the server
+  var sortKeys = keese(previousKey, nextKey, keys.length);
   for (var i = 0; i < keys.length; i += 1) {
     var key = keys[i];
-    var sortKey = keese(previousKey, nextKey);
+    var sortKey = sortKeys[i];
     var id = uuid();
     items[id] = {
       key: key,
       sortKey: sortKey,
     };
-    this.queue.itemTable[id] = {
+    playlist[playlist.id] = {
       id: id,
       key: key,
       sortKey: sortKey,
       isRandom: false,
       track: this.library.trackTable[key],
     };
-    previousKey = sortKey;
   }
-  this.refreshPlaylistList(this.queue);
-  this.sendCommand('queue', items);
-  this.emit('queueUpdate');
+
+  this.refreshPlaylistList(playlist);
+
+  return items;
 };
 
 PlayerClient.prototype.queueTracksNext = function(keys) {
@@ -420,17 +460,13 @@ PlayerClient.prototype.queueTracksNext = function(keys) {
       }
     }
   }
-  this.queueTracks(keys, prevKey, nextKey);
+  this.queueOnQueue(keys, prevKey, nextKey);
 };
 
 PlayerClient.prototype.clear = function(){
   this.sendCommand('clear');
   this.clearQueue();
   this.emit('queueUpdate');
-};
-
-PlayerClient.prototype.shuffle = function(){
-  this.sendCommand('shuffle');
 };
 
 PlayerClient.prototype.play = function(){
@@ -500,9 +536,10 @@ PlayerClient.prototype.moveIds = function(trackIds, previousKey, nextKey){
   }
   tracks.sort(compareSortKeyAndId);
   var items = {};
+  var sortKeys = keese(previousKey, nextKey, tracks.length);
   for (i = 0; i < tracks.length; i += 1) {
     track = tracks[i];
-    var sortKey = keese(previousKey, nextKey);
+    var sortKey = sortKeys[i];
     items[track.id] = {
       sortKey: sortKey,
     };
@@ -514,69 +551,67 @@ PlayerClient.prototype.moveIds = function(trackIds, previousKey, nextKey){
   this.emit('queueUpdate');
 };
 
-PlayerClient.prototype.shiftIds = function(trackIdSet, offset) {
-  // an example of shifting 5 items (a,c,f,g,i) "down":
-  // offset: +1, reverse: false, this -> way
-  // selection: *     *        *  *     *
-  //    before: a, b, c, d, e, f, g, h, i
-  //             \     \        \  \    |
-  //              \     \        \  \   |
-  //     after: b, a, d, c, e, h, f, g, i
-  // selection:    *     *        *  *  *
-  // (note that "i" does not move because it has no futher to go.)
-  //
-  // an alternate way to think about it: some items "leapfrog" backwards over the selected items.
-  // this ends up being much simpler to compute, and even more compact to communicate.
-  // selection: *     *        *  *     *
-  //    before: a, b, c, d, e, f, g, h, i
-  //              /     /        ___/
-  //             /     /        /
-  //     after: b, a, d, c, e, h, f, g, i
-  // selection:    *     *        *  *  *
-  // (note that the moved items are not the selected items)
-  var itemList = this.queue.itemList;
-  var movedItems = {};
-  var reverse = offset === -1;
-  function getKeeseBetween(itemA, itemB) {
-    if (reverse) {
-      var tmp = itemA;
-      itemA = itemB;
-      itemB = tmp;
-    }
-    var keyA = itemA == null ? null : itemA.sortKey;
-    var keyB = itemB == null ? null : itemB.sortKey;
-    return keese(keyA, keyB);
-  }
-  if (reverse) {
-    // to make this easier, just reverse the item list in place so we can write one iteration routine.
-    // note that we are editing our data model live! so don't forget to refresh it later.
-    itemList.reverse();
-  }
-  for (var i = itemList.length - 1; i >= 1; i--) {
-    var track = itemList[i];
-    if (!(track.id in trackIdSet) && (itemList[i - 1].id in trackIdSet)) {
-      // this one needs to move backwards (e.g. found "h" is not selected, and "g" is selected)
-      i--; // e.g. g
-      i--; // e.g. f
-      while (true) {
-        if (i < 0) {
-          // fell off the end (or beginning) of the list
-          track.sortKey = getKeeseBetween(null, itemList[0]);
-          break;
-        }
-        if (!(itemList[i].id in trackIdSet)) {
-          // this is where it goes (e.g. found "d" is not selected)
-          track.sortKey = getKeeseBetween(itemList[i], itemList[i + 1]);
-          break;
-        }
-        i--;
-      }
-      movedItems[track.id] = {sortKey: track.sortKey};
-      i++;
-    }
-  }
-  // we may have reversed the table and adjusted all the sort keys, so we need to refresh this.
+PlayerClient.prototype.shuffleQueueItems = function(ids) {
+  var items = shuffleIds(ids, this.queue.itemTable);
   this.refreshPlaylistList(this.queue);
+  this.sendCommand('move', items);
+  this.emit('queueUpdate');
+};
+
+PlayerClient.prototype.shufflePlaylists = function(playlistIdSet) {
+  var updates = {};
+  for (var playlistId in playlistIdSet) {
+    var playlist = this.playlistTable[playlistId];
+    var items = shuffleIds(Object.keys(playlist.itemTable), playlist.itemTable);
+    updates[playlistId] = items;
+    this.refreshPlaylistList(playlist);
+  }
+
+  this.sendCommand('playlistMoveItems', updates);
+  this.emit('playlistsUpdate');
+};
+
+PlayerClient.prototype.shufflePlaylistItems = function(idSet) {
+  var idLists = {};
+  var idList;
+  for (var id in idSet) {
+    var item = this.playlistItemTable[id];
+    idList = idLists[item.playlist.id] || (idLists[item.playlist.id] = []);
+    idList.push(id);
+  }
+  var updates = {};
+  for (var playlistId in idLists) {
+    idList = idLists[playlistId];
+    var playlist = this.playlistTable[playlistId];
+    updates[playlistId] = shuffleIds(idList, playlist.itemTable);
+    this.refreshPlaylistList(playlist);
+  }
+  this.sendCommand('playlistMoveItems', updates);
+  this.emit('playlistsUpdate');
+};
+
+PlayerClient.prototype.playlistShiftIds = function(trackIdSet, offset) {
+  var perPlaylistSet = {};
+  var set;
+  for (var trackId in trackIdSet) {
+    var item = this.playlistItemTable[trackId];
+    set = perPlaylistSet[item.playlist.id] || (perPlaylistSet[item.playlist.id] = {});
+    set[trackId] = true;
+  }
+
+  var updates = {};
+  for (var playlistId in perPlaylistSet) {
+    set = perPlaylistSet[playlistId];
+    var playlist = this.playlistTable[playlistId];
+    updates[playlistId] = shiftIdsInPlaylist(this, playlist, set, offset);
+  }
+
+  this.sendCommand('playlistMoveItems', updates);
+  this.emit('playlistsUpdate');
+};
+
+PlayerClient.prototype.shiftIds = function(trackIdSet, offset) {
+  var movedItems = shiftIdsInPlaylist(this, this.queue, trackIdSet, offset);
 
   this.sendCommand('move', movedItems);
   this.emit('queueUpdate');
@@ -609,30 +644,91 @@ PlayerClient.prototype.removeIds = function(trackIds){
   this.emit('queueUpdate');
 };
 
+PlayerClient.prototype.removeItemsFromPlaylists = function(idSet) {
+  var removals = {};
+  var playlist;
+  for (var playlistItemId in idSet) {
+    var playlistItem = this.playlistItemTable[playlistItemId];
+    playlist = playlistItem.playlist;
+    var removal = removals[playlist.id];
+    if (!removal) {
+      removal = removals[playlist.id] = [];
+    }
+    removal.push(playlistItemId);
+
+    delete playlist.itemTable[playlistItemId];
+  }
+  for (var playlistId in removals) {
+    playlist = this.playlistTable[playlistId];
+    this.refreshPlaylistList(playlist);
+  }
+  this.sendCommand('playlistRemoveItems', removals);
+  this.emit('playlistsUpdate');
+};
+
 PlayerClient.prototype.deleteTracks = function(keysList) {
   this.sendCommand('deleteTracks', keysList);
-  [this.library, this.searchResults].forEach(function(lib) {
-    keysList.forEach(function(key) {
-      lib.removeTrack(key);
-    });
-    lib.rebuild();
-  });
+  removeTracksInLib(this.library, keysList);
+  removeTracksInLib(this.searchResults, keysList);
+
+  var queueDirty = false;
+  var dirtyPlaylists = {};
+  for (var keysListIndex = 0; keysListIndex < keysList.length; keysListIndex += 1) {
+    var key = keysList[keysListIndex];
+
+    // delete items from the queue that are being deleted from the library
+    var i;
+    for (i = 0; i < this.queue.itemList.length; i += 1) {
+      var queueItem = this.queue.itemList[i];
+      if (queueItem.track.key === key) {
+        delete this.queue.itemTable[queueItem.id];
+        queueDirty = true;
+      }
+    }
+
+    // delete items from playlists that are being deleted from the library
+    for (var playlistIndex = 0; playlistIndex < this.playlistList.length; playlistIndex += 1) {
+      var playlist = this.playlistList[playlistIndex];
+      for (i = 0; i < playlist.itemList.length; i += 1) {
+        var plItem = playlist.itemList[i];
+        if (plItem.track.key === key) {
+          delete playlist.itemTable[plItem.id];
+          dirtyPlaylists[playlist.id] = playlist;
+        }
+      }
+    }
+  }
+  if (queueDirty) {
+    this.refreshPlaylistList(this.queue);
+    this.emit('queueUpdate');
+  }
+  var anyDirtyPlaylists = false;
+  for (var dirtyPlId in dirtyPlaylists) {
+    var dirtyPlaylist = dirtyPlaylists[dirtyPlId];
+    this.refreshPlaylistList(dirtyPlaylist);
+    anyDirtyPlaylists = true;
+  }
+  if (anyDirtyPlaylists) {
+    this.emit('playlistsUpdate');
+  }
+
   this.emit('libraryupdate');
 };
 
-PlayerClient.prototype.deletePlaylists = function(idsList) {
-  this.sendCommand('playlistDelete', idsList);
-  for (var i = 0; i < idsList.length; i += 1) {
-    var id = idsList[i];
-    var playlist = this.stored_playlist_table[id];
+PlayerClient.prototype.deletePlaylists = function(idSet) {
+  var idList = Object.keys(idSet);
+  if (idList.length === 0) return;
+  this.sendCommand('playlistDelete', idList);
+  for (var id in idSet) {
+    var playlist = this.playlistTable[id];
     for (var j = 0; j < playlist.itemList; j += 1) {
       var item = playlist.itemList[j];
-      delete this.stored_playlist_item_table[item.id];
+      delete this.playlistItemTable[item.id];
     }
-    delete this.stored_playlist_table[id];
-    this.stored_playlists.splice(playlist.index, 1);
-    for (j = playlist.index; j < this.stored_playlists.length; j += 1) {
-      this.stored_playlists[j].index -= 1;
+    delete this.playlistTable[id];
+    this.playlistList.splice(playlist.index, 1);
+    for (j = playlist.index; j < this.playlistList.length; j += 1) {
+      this.playlistList[j].index -= 1;
     }
   }
   this.emit('playlistsUpdate');
@@ -721,7 +817,7 @@ PlayerClient.prototype.resetServerState = function(){
   this.importProgressList = [];
   this.importProgressTable = {};
 
-  this.clearStoredPlaylists();
+  this.clearPlaylists();
 };
 
 PlayerClient.prototype.createPlaylist = function(name) {
@@ -738,13 +834,105 @@ PlayerClient.prototype.createPlaylist = function(name) {
     name: name,
     index: 0,
   };
-  this.stored_playlist_table[id] = playlist;
-  this.stored_playlists.push(playlist);
+  this.playlistTable[id] = playlist;
+  this.playlistList.push(playlist);
   this.sortAndIndexPlaylists();
   this.emit('playlistsUpdate');
 
   return playlist;
 };
+
+function shiftIdsInPlaylist(self, playlist, trackIdSet, offset) {
+  // an example of shifting 5 items (a,c,f,g,i) "down":
+  // offset: +1, reverse: false, this -> way
+  // selection: *     *        *  *     *
+  //    before: a, b, c, d, e, f, g, h, i
+  //             \     \        \  \    |
+  //              \     \        \  \   |
+  //     after: b, a, d, c, e, h, f, g, i
+  // selection:    *     *        *  *  *
+  // (note that "i" does not move because it has no futher to go.)
+  //
+  // an alternate way to think about it: some items "leapfrog" backwards over the selected items.
+  // this ends up being much simpler to compute, and even more compact to communicate.
+  // selection: *     *        *  *     *
+  //    before: a, b, c, d, e, f, g, h, i
+  //              /     /        ___/
+  //             /     /        /
+  //     after: b, a, d, c, e, h, f, g, i
+  // selection:    *     *        *  *  *
+  // (note that the moved items are not the selected items)
+  var itemList = playlist.itemList;
+  var movedItems = {};
+  var reverse = offset === -1;
+  function getKeeseBetween(itemA, itemB) {
+    if (reverse) {
+      var tmp = itemA;
+      itemA = itemB;
+      itemB = tmp;
+    }
+    var keyA = itemA == null ? null : itemA.sortKey;
+    var keyB = itemB == null ? null : itemB.sortKey;
+    return keese(keyA, keyB);
+  }
+  if (reverse) {
+    // to make this easier, just reverse the item list in place so we can write one iteration routine.
+    // note that we are editing our data model live! so don't forget to refresh it later.
+    itemList.reverse();
+  }
+  for (var i = itemList.length - 1; i >= 1; i--) {
+    var track = itemList[i];
+    if (!(track.id in trackIdSet) && (itemList[i - 1].id in trackIdSet)) {
+      // this one needs to move backwards (e.g. found "h" is not selected, and "g" is selected)
+      i--; // e.g. g
+      i--; // e.g. f
+      while (true) {
+        if (i < 0) {
+          // fell off the end (or beginning) of the list
+          track.sortKey = getKeeseBetween(null, itemList[0]);
+          break;
+        }
+        if (!(itemList[i].id in trackIdSet)) {
+          // this is where it goes (e.g. found "d" is not selected)
+          track.sortKey = getKeeseBetween(itemList[i], itemList[i + 1]);
+          break;
+        }
+        i--;
+      }
+      movedItems[track.id] = {sortKey: track.sortKey};
+      i++;
+    }
+  }
+  // we may have reversed the table and adjusted all the sort keys, so we need to refresh this.
+  self.refreshPlaylistList(playlist);
+  return movedItems;
+}
+
+function shuffleIds(ids, table) {
+  var sortKeys = [];
+  var i, id, sortKey;
+  for (i = 0; i < ids.length; i += 1) {
+    id = ids[i];
+    sortKey = table[id].sortKey;
+    sortKeys.push(sortKey);
+  }
+  shuffle(sortKeys);
+  var items = {};
+  for (i = 0; i < ids.length; i += 1) {
+    id = ids[i];
+    sortKey = sortKeys[i];
+    items[id] = {sortKey: sortKey};
+    table[id].sortKey = sortKey;
+  }
+  return items;
+}
+
+function removeTracksInLib(lib, keysList) {
+  keysList.forEach(function(key) {
+    lib.removeTrack(key);
+  });
+  lib.rebuild();
+}
 
 function elapsedToDate(elapsed){
   return new Date(new Date() - elapsed * 1000);

@@ -1,3 +1,125 @@
+### Version 1.5.0 (2015-01-09)
+
+Contains breaking changes to the Groove Basin protocol. Since the Groove Basin
+protocol is not officially stable yet, only the minor version number is bumped.
+
+ * Andrew Kelley:
+   - playlist support
+   - support for MPD stored_playlist commands
+   - imported songs automatically added to an Incoming playlist
+   - client: double quotes can be used to include spaces in search terms.
+   - import by name feature - searches YouTube for the name and imports into
+     your library.
+   - client: fix security bug where title display was not escaping HTML
+   - fix symlink behavior in music library
+   - fix spacebar keyboard shortcut in Firefox
+   - fix crash when zip files contain non music files
+   - rename "Dynamic Mode" to "Auto DJ"
+   - rename "Events" pane to "Chat"
+   - MPD users show up in events pane, and MPD commands show up as events for
+     MPD users.
+   - MPD lsinfo command allows '/' to mean root directory. Fixes compatibility
+     with gmpc.
+   - MPD list command supports a single argument to return all tags of that
+     type. Fixes compatibility with gmpc.
+   - MPD: when appending tracks with Auto DJ on, insert them before the random
+     ones.
+   - (breaking change) protocolupgrade UUID has changed
+   - (breaking change) slashes and spaces disallowed in user names
+   - (breaking change) clear and shuffle commands removed from protocol
+   - HTTP redirect to HTTPS on the same port
+   - client: clear and shuffle buttons removed from UI
+   - client: Ctrl+A to select all. Works on queue, library, and playlists.
+   - client: shuffle works on the selection instead of the entire queue
+     and also works on playlists and playlist items.
+   - client: shuffle context menu item added to playlists and queue.
+   - client: ability to click in the empty queue area to get rid of
+     context menu
+   - client: scroll to cursor instead of selection
+   - client: clear selection when focusing search box
+   - client: disable context menu items lacking permission
+   - client: fix context menu popping up outside document boundary
+   - client: fix playlist item movement not anticipating correctly
+   - client: 'E' keyboard shortcut to edit tags
+   - client: prettier edit tags dialog
+   - client: no longer depends on jQuery, jQuery UI, and cssreset. The code is
+     now smaller, less buggy, and more performant.
+   - client: fix not all DOM elements resizing correctly
+   - client: `>` and `<` keyboard shortcuts require pressing shift
+   - client: ability to show keyboard shortcuts from settings
+   - client: add to playlist UI allows better keyboard interaction
+   - fix crash when encountering paid YouTube videos
+   - fix not respecting verbose logging for play queue
+   - `--config` option so config file can be in a different place
+   - db path is relative to config file instead of CWD
+   - save `playCount` in the db
+   - make importing files more efficient by disabling fs watching during
+   - server handles many commands more efficiently
+   - use `xdg-user-dir` if available for default music directory
+   - add `--delete-all-events` CLI argument
+   - chat: invalid commands do not get cleared or sent
+   - fix MPD/groovebasin ID mapping memory leak
+   - groovebasin protocol has stricter and safer argument parsing, resulting in
+     several security vulnerabilities fixed.
+   - deleting multiple tracks from the library is more efficient and results in
+     `O(1)` messages to connected clients instead of `O(n)`.
+   - ability to add SSL CA certificates
+   - better shuffle behavior
+     * When Auto DJ is on, it re-rolls all the random songs without
+       interrupting history or current track.
+     * When Auto DJ is off, it preserves sort keys; just shuffling them around.
+   - rescan command deletes mtimes in the db instead of relying on a flag in
+     memory. This way if you kill the server in the middle of a rescan, it
+     picks up where it left off.
+   - add `--spawn`, `--print-url`, and `--start` command line options
+   - client: smoother track slider
+   - client: improved page performance due to no longer gzipping assets which
+     are already compressed.
+
+ * Melissa Noelle:
+   - chat: support /me events
+   - chat: convert URLs to links
+   - client: style the slider widget
+
+ * Josh Wolfe:
+   - sort keys for queueing up large number of songs at once requires
+     `O(n*log(n))` size over the network instead of `O(n^2)`.
+   - play queue total never displays a negative number and shows '?' if some
+     tracks need scanning.
+
+ * moshev
+   - Fixed a regression in uploading.
+
+### Version 1.4.0 (2014-10-16)
+
+ * Andrew Kelley:
+   - client: fix showing filter without filtered results when server restarts
+   - fix auto pause behavior and add event for it
+   - fix symlink behavior in music library
+   - import by url: respect content-disposition header
+   - fix serving invalid content-disposition header
+   - no longer accidentally shipping config.json in npm module
+   - uploaded files are imported in a streaming fashion instead of after all
+     files are finishing uploading.
+   - fix an uploading crash
+   - ability to import and upload .zip files.
+   - auto queue happens server side.
+   - play queue displays total duration and selection duration
+   - add progress reporting for ongoing imports
+   - fix aborted uploads getting stuck
+   - Remove the easter eggs. It was fun while it lasted. Maybe someday we will
+     live in a society where nothing is copyrighted.
+   - add Cache-Control header to static assets to help enforce caching rules.
+
+ * Josh Wolfe:
+   - fix crash when uploading 0 byte .zip file
+
+ * Felipe Sateler:
+   - open stream and homepage links in new tabs/windows
+
+ * Melissa Noelle:
+   - client supports /nick command to change name
+
 ### Version 1.3.2 (2014-10-06)
 
  * Andrew Kelley:
@@ -351,7 +473,7 @@
 * Josh Wolfe:
   * do not show ugly "user_n" text after usernames in chat.
 
-### Version 0.0.4 (Mar 6 2012)
+### Version 0.0.4 (2012-03-06)
 
 * Andrew Kelley:
   * update keyboard shortcuts dialog
