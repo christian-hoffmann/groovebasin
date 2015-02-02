@@ -611,8 +611,8 @@ var localState = {
     session_key: null,
     scrobbling_on: false
   },
-  authUsername: 'sandstorm_user',
-  authPassword: 'xyzzy',
+  authUsername: null,
+  authPassword: null,
   autoQueueUploads: true,
 };
 var streamBtnDom = document.getElementById('stream-btn');
@@ -1236,7 +1236,7 @@ var EDIT_TAG_TYPES = {
   },
 };
 var chatCommands = {
-  nick: changeUserName,
+  //nick: changeUserName,
   me: displaySlashMe,
 };
 var escapeHtmlReplacements = { "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" };
@@ -1377,7 +1377,7 @@ var addToPlaylistDialogFilteredList = [];
 init();
 
 function saveLocalState(){
-  localStorage.setItem('state', JSON.stringify(localState));
+  //localStorage.setItem('state', JSON.stringify(localState));
 }
 
 function loadLocalState() {
