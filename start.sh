@@ -6,4 +6,4 @@ mkdir -p /var/uploadDir
 
 #npm config set tmp /var/tmp
 
-npm start
+node lib/server.js
