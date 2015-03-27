@@ -14,10 +14,11 @@ const pkgdef :Spk.PackageDefinition = (
   # your keyring. All updates must be signed with the same key.
 
   manifest = (
+    appTitle = (defaultText = "Groove Basin"),
     appVersion = 3,  # Increment this for every release.
 
     actions = [
-      ( title = (defaultText = "New GrooveBasin Instance"),
+      ( title = (defaultText = "New Music Library"),
         command = .myCommand
       )
     ],
@@ -44,12 +45,26 @@ const pkgdef :Spk.PackageDefinition = (
 
   bridgeConfig = (
     viewInfo = (
-       permissions = [(name = "admin")]
+       permissions = [(name = "admin"),
+                      (name = "read"),
+                      (name = "add"),
+                      (name = "control",
+                       title = (defaultText ="" )),
+                      (name = "playlist")],
+       roles = [(title = (defaultText = "listener"),
+                 permissions = .listenerPermissions,
+                 verbPhrase = (defaultText = "can listen")),
+                 (title = (defaultText = "contributer"),
+                 permissions = .contributorPermissions,
+                 verbPhrase = (defaultText = "can listen and add tracks"))
+                 ]
     )
   )
-
-
 );
+
+#                                                admin | read |  add | control | playlist |
+const listenerPermissions : List(Bool)        = [ false,  true, false,     true,    true];
+const contributorPermissions : List(Bool)     = [ false,  true,  true,     true,    true];
 
 const myCommand :Spk.Manifest.Command = (
   argv = ["/sandstorm-http-bridge", "10000", "--", "/bin/sh", "start.sh"],

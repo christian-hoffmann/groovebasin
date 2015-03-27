@@ -578,6 +578,7 @@ node_modules/ytdl-core/node_modules/underscore/package.json
 node_modules/ytdl-core/node_modules/underscore/underscore.js
 node_modules/ytdl-core/package.json
 package.json
+proc/cpuinfo
 public
 public/app.css
 public/app.js
