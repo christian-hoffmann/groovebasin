@@ -1,21 +1,14 @@
 @0xe6391d0709201983;
 
 using Spk = import "/sandstorm/package.capnp";
-# This imports:
-#   $SANDSTORM_HOME/latest/usr/include/sandstorm/package.capnp
-# Check out that file to see the full, documented package definition format.
 
 const pkgdef :Spk.PackageDefinition = (
-  # The package definition. Note that the spk tool looks specifically for the
-  # "pkgdef" constant.
-
   id = "wfg1r0qra2ewyvns05r0rddqttt57qxurz3nz5z95rjnm63et7e0",
-  # Your app ID is actually its public key. The private key was placed in
-  # your keyring. All updates must be signed with the same key.
 
   manifest = (
     appTitle = (defaultText = "Groove Basin"),
     appVersion = 3,  # Increment this for every release.
+    appMarketingVersion = (defaultText = "0.0.1"),
 
     actions = [
       ( title = (defaultText = "New Music Library"),
@@ -32,9 +25,6 @@ const pkgdef :Spk.PackageDefinition = (
       ( sourcePath = "/",    # Then search the system root directory.
         hidePaths = [ "home", "proc", "sys",
                       "etc/passwd", "etc/nsswitch.conf"]
-        # You probably don't want the app pulling files from these places,
-        # so we hide them. Note that /dev, /var, and /tmp are implicitly
-        # hidden because Sandstorm itself provides them.
       )
     ]
   ),
@@ -45,26 +35,39 @@ const pkgdef :Spk.PackageDefinition = (
 
   bridgeConfig = (
     viewInfo = (
-       permissions = [(name = "admin"),
-                      (name = "read"),
-                      (name = "add"),
-                      (name = "control",
-                       title = (defaultText ="" )),
-                      (name = "playlist")],
-       roles = [(title = (defaultText = "listener"),
-                 permissions = .listenerPermissions,
-                 verbPhrase = (defaultText = "can listen")),
-                 (title = (defaultText = "contributer"),
+       permissions = [(name = "admin", title = (defaultText = "admin"),
+                       description = (defaultText = "allows tag editing and track deletion")),
+                      (name = "read", title = (defaultText = "read"),
+                       description = (defaultText = "allows listening and downloading")),
+                      (name = "add", title = (defaultText = "add"),
+                       description = (defaultText = "allows track uploads")),
+                      (name = "control", title = (defaultText = "control"),
+                       description = (defaultText = "allows control of the audio stream")),
+                      (name = "playlist", title = (defaultText = "playlist"),
+                       description = (defaultText = "allows playlist editing"))],
+       roles = [(title = (defaultText = "controller"),
+                 permissions = .controllerPermissions,
+                 verbPhrase = (defaultText = "can control the stream")),
+                (title = (defaultText = "contributor"),
                  permissions = .contributorPermissions,
-                 verbPhrase = (defaultText = "can listen and add tracks"))
+                 verbPhrase =
+                    (defaultText = "can control the stream, upload tracks, and edit playlists")),
+                (title = (defaultText = "administrator"),
+                 permissions = .adminPermissions,
+                 verbPhrase = (defaultText = "can do anything")),
+                (title = (defaultText = "listener"),
+                 permissions = .listenerPermissions,
+                 verbPhrase = (defaultText = "can only listen"))
                  ]
     )
   )
 );
 
-#                                                admin | read |  add | control | playlist |
-const listenerPermissions : List(Bool)        = [ false,  true, false,     true,    true];
-const contributorPermissions : List(Bool)     = [ false,  true,  true,     true,    true];
+#                                                 admin | read |  add | control | playlist |
+const controllerPermissions : List(Bool)       = [ false,  true, false,     true,    false];
+const contributorPermissions : List(Bool)      = [ false,  true,  true,     true,    true];
+const adminPermissions : List(Bool)            = [ true,  true,  true,     true,    true];
+const listenerPermissions : List(Bool)         = [ false,  true, false,     false,    false];
 
 const myCommand :Spk.Manifest.Command = (
   argv = ["/sandstorm-http-bridge", "10000", "--", "/bin/sh", "start.sh"],
