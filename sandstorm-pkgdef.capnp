@@ -7,8 +7,8 @@ const pkgdef :Spk.PackageDefinition = (
 
   manifest = (
     appTitle = (defaultText = "Groove Basin"),
-    appVersion = 3,  # Increment this for every release.
-    appMarketingVersion = (defaultText = "0.0.1"),
+    appVersion = 4,  # Increment this for every release.
+    appMarketingVersion = (defaultText = "0.0.4"),
 
     actions = [
       ( title = (defaultText = "New Music Library"),
