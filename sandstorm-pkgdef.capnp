@@ -7,8 +7,8 @@ const pkgdef :Spk.PackageDefinition = (
 
   manifest = (
     appTitle = (defaultText = "Groove Basin"),
-    appVersion = 4,  # Increment this for every release.
-    appMarketingVersion = (defaultText = "0.0.4"),
+    appVersion = 5,  # Increment this for every release.
+    appMarketingVersion = (defaultText = "0.0.5"),
 
     actions = [
       ( title = (defaultText = "New Music Library"),
@@ -51,7 +51,8 @@ const pkgdef :Spk.PackageDefinition = (
                 (title = (defaultText = "contributor"),
                  permissions = .contributorPermissions,
                  verbPhrase =
-                    (defaultText = "can control the stream, upload tracks, and edit playlists")),
+                    (defaultText = "can control the stream, upload tracks, and edit playlists"),
+                 default = true),
                 (title = (defaultText = "administrator"),
                  permissions = .adminPermissions,
                  verbPhrase = (defaultText = "can do anything")),
