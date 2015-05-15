@@ -9,6 +9,7 @@
     "mpdPort": null,
     "acoustidAppKey": "bgFvC4vW",
     "encodeQueueDuration": 8,
+    "encodeBitRate": 256,
     "sslKey": false,
     "sslCert": false,
     "sslCaDir": null,

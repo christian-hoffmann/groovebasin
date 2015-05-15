@@ -502,7 +502,7 @@ node_modules/leveldown/leveldown.js
 node_modules/leveldown/node_modules/abstract-leveldown/abstract-chained-batch.js
 node_modules/leveldown/node_modules/abstract-leveldown/abstract-iterator.js
 node_modules/leveldown/node_modules/abstract-leveldown/abstract-leveldown.js
-node_modules/leveldown/node_modules/abstract-leveldown/node_modules/xtend/index.js
+node_modules/leveldown/node_modules/abstract-leveldown/node_modules/xtend/immutable.js
 node_modules/leveldown/node_modules/abstract-leveldown/node_modules/xtend/package.json
 node_modules/leveldown/node_modules/abstract-leveldown/package.json
 node_modules/leveldown/node_modules/bindings/bindings.js
