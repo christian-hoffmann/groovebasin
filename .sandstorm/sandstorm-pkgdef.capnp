@@ -7,12 +7,37 @@ const pkgdef :Spk.PackageDefinition = (
 
   manifest = (
     appTitle = (defaultText = "Groove Basin"),
-    appVersion = 6,  # Increment this for every release.
-    appMarketingVersion = (defaultText = "0.0.6"),
+    appVersion = 7,  # Increment this for every release.
+    appMarketingVersion = (defaultText = "2015.08.19 (1.5.1+)"),
+
+    metadata = (
+      icons = (
+        appGrid = (png = (dpi1x = embed "app-graphics/groovebasin-128.png",
+                          dpi2x = embed "app-graphics/groovebasin-256.png")),
+        grain = (png = (dpi1x = embed "app-graphics/groovebasin-24.png",
+                        dpi2x = embed "app-graphics/groovebasin-48.png")),
+        market = (png = (dpi1x = embed "app-graphics/groovebasin-150.png")),
+      ),
+      website = "http://groovebasin.com",
+      codeUrl = "https://github.com/dwrensha/groovebasin",
+      license = (openSource = mit),
+      categories = [media,],
+      author = (
+        upstreamAuthor = "Andrew Kelley",
+        contactEmail = "david@sandstorm.io",
+        pgpSignature = embed "pgp-signature",
+      ),
+      pgpKeyring = embed "pgp-keyring",
+      description = (defaultText = embed "description.md"),
+      screenshots = [(width = 448, height = 311, png = embed "screenshot.png")],
+      changeLog = (defaultText = embed "changeLog.md"),
+    ),
+
 
     actions = [
       ( title = (defaultText = "New Music Library"),
-        command = .myCommand
+        command = .myCommand,
+        nounPhrase = (defaultText = "Music Library")
       )
     ],
 
@@ -22,6 +47,7 @@ const pkgdef :Spk.PackageDefinition = (
   sourceMap = (
     searchPath = [
       ( sourcePath = "." ),  # Search this directory first.
+      ( sourcePath = "/opt/app"),
       ( sourcePath = "/",    # Then search the system root directory.
         hidePaths = [ "home", "proc", "sys",
                       "etc/passwd", "etc/nsswitch.conf"]
