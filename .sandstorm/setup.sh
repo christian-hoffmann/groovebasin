@@ -7,6 +7,7 @@ set -euo pipefail
 # This is the ideal place to do things like:
 #
 export DEBIAN_FRONTEND=noninteractive
+apt-get update
 apt-get install -y nodejs-dev nodejs-legacy npm libgroove-dev libgrooveplayer-dev \
     libgrooveloudness-dev libgroovefingerprinter-dev
 #
