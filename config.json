@@ -13,5 +13,9 @@
     "sslKey": false,
     "sslCert": false,
     "sslCaDir": null,
-    "googleApiKey": "AIzaSyDdTDD8-gu_kp7dXtT-53xKcVbrboNAkpM"
+    "googleApiKey": "AIzaSyDdTDD8-gu_kp7dXtT-53xKcVbrboNAkpM",
+    "ignoreExtensions": [
+      ".jpg", ".jpeg", ".txt", ".png", ".log", ".cue", ".pdf", ".m3u",
+      ".nfo", ".ini", ".xml", ".zip"
+    ]
 }

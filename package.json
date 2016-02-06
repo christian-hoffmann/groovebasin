@@ -22,7 +22,7 @@
     "express": "~4.12.3",
     "findit2": "~2.2.3",
     "googleapis": "~2.0.3",
-    "groove": "~2.5.0",
+    "groove": "~2.3.0",
     "httpolyglot": "~0.1.1",
     "keese": "~1.1.1",
     "lastfm": "~0.9.2",
