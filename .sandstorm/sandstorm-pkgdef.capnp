@@ -74,8 +74,8 @@ const pkgdef :Spk.PackageDefinition = (
        roles = [(title = (defaultText = "controller"),
                  permissions = .controllerPermissions,
                  verbPhrase = (defaultText = "can control the stream")),
-                (title = (defaultText = "contributor"),
-                 permissions = .contributorPermissions,
+                (title = (defaultText = "disc jockey"),
+                 permissions = .djPermissions,
                  verbPhrase =
                     (defaultText = "can control the stream, upload tracks, and edit playlists"),
                  default = true),
@@ -84,7 +84,10 @@ const pkgdef :Spk.PackageDefinition = (
                  verbPhrase = (defaultText = "can do anything")),
                 (title = (defaultText = "listener"),
                  permissions = .listenerPermissions,
-                 verbPhrase = (defaultText = "can only listen"))
+                 verbPhrase = (defaultText = "can only listen")),
+                (title = (defaultText = "contributor"),
+                 permissions = .contributorPermissions,
+                 verbPhrase = (defaultText = "can upload tracks and edit playlists"))
                  ]
     )
   )
@@ -92,9 +95,10 @@ const pkgdef :Spk.PackageDefinition = (
 
 #                                                 admin | read |  add | control | playlist |
 const controllerPermissions : List(Bool)       = [ false,  true, false,     true,    false];
-const contributorPermissions : List(Bool)      = [ false,  true,  true,     true,    true];
-const adminPermissions : List(Bool)            = [ true,  true,  true,     true,    true];
+const djPermissions : List(Bool)               = [ false,  true,  true,     true,    true];
+const adminPermissions : List(Bool)            = [ true,   true,  true,      true,    true];
 const listenerPermissions : List(Bool)         = [ false,  true, false,     false,    false];
+const contributorPermissions : List(Bool)      = [ false,  true,  true,     false,    true];
 
 const myCommand :Spk.Manifest.Command = (
   argv = ["/sandstorm-http-bridge", "10000", "--", "/bin/sh", "start.sh"],
