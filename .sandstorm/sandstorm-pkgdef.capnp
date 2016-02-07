@@ -7,8 +7,8 @@ const pkgdef :Spk.PackageDefinition = (
 
   manifest = (
     appTitle = (defaultText = "Groove Basin"),
-    appVersion = 7,  # Increment this for every release.
-    appMarketingVersion = (defaultText = "2015.08.19 (1.5.1+)"),
+    appVersion = 8,  # Increment this for every release.
+    appMarketingVersion = (defaultText = "2016.02.06 (1.5.1+)"),
 
     metadata = (
       icons = (
