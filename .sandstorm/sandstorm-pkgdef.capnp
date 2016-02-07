@@ -28,6 +28,7 @@ const pkgdef :Spk.PackageDefinition = (
         pgpSignature = embed "pgp-signature",
       ),
       pgpKeyring = embed "pgp-keyring",
+      shortDescription = (defaultText = "Music player"),
       description = (defaultText = embed "description.md"),
       screenshots = [(width = 448, height = 311, png = embed "screenshot.png")],
       changeLog = (defaultText = embed "changeLog.md"),
