@@ -66,6 +66,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider :virtualbox do |vb, override|
     vb.cpus = cpus
     vb.memory = assign_ram_mb
+    vb.customize ["modifyvm", :id, "--nictype1", "Am79C973"]
 
     override.vm.synced_folder "..", "/opt/app"
     override.vm.synced_folder ENV["HOME"] + "/.sandstorm", "/host-dot-sandstorm"
