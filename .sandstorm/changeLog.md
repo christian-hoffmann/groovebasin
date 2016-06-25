@@ -1,3 +1,5 @@
+### 2016.06.25 (1.5.1+)
+- Use new sandstorm-http-bridge with better flow control. Should be more memory efficient now.
 ### v2016.02.06 (1.5.1+)
 - Pull in upstream changes, including support for labels.
 - Rename "contributor" role to "disc jockey".
